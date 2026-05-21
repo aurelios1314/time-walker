@@ -1,0 +1,1683 @@
+/* ==========================================================================
+   01. 全局核心变量与设计系统 (Color Tokens & Global Resets)
+   ========================================================================== */
+:root {
+    --forbidden-red: #8c2230;
+    /* 故宫宫墙红 - 核心高光色 */
+    --champagne-gold: #d4af37;
+    /* 暗香槟金 - 次级点缀色 */
+    --pearl: #f8f6f2;
+    /* 宣纸宣白 - 柔和背景 */
+    --ink: #2f2522;
+    /* 徽墨水墨黑 - 文字主色 */
+    --muted: #8a7f79;
+    /* 暮云灰 - 辅助线与次要文字 */
+    --card: #fffdfa;
+    /* 玉瓷白 - 卡片纯白背景 */
+    --line: rgba(140, 34, 48, 0.12);
+    /* 淡淡红墙影 - 虚线与分割线 */
+    --shadow: 0 12px 32px rgba(47, 37, 34, 0.04);
+    /* 呼吸感轻量阴影 */
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", serif;
+    color: var(--ink);
+    background:
+        radial-gradient(circle at 15% 15%, rgba(212, 175, 55, 0.08), transparent 25%),
+        radial-gradient(circle at 85% 85%, rgba(140, 34, 48, 0.06), transparent 25%),
+        linear-gradient(135deg, #fbfaf8, var(--pearl));
+    overflow-x: hidden;
+}
+
+/* 优雅的自定义滚动条 */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(138, 127, 121, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+}
+
+/* ==========================================================================
+   02. 三段式大底座网格布局 (Web OS Foundation Layout)
+   ========================================================================== */
+.shell {
+    width: 100%;
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr 300px;
+    gap: 16px;
+    flex: 1;
+    width: 100%;
+    max-width: 1680px;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   03. SECTION 1: 左侧导航栏与卡片 (.detail-panel)
+   ========================================================================== */
+.detail-panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+    height: calc(100vh - 32px);
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.nav-brand {
+    padding: 8px 4px 16px 4px;
+    border-bottom: 2px solid var(--forbidden-red);
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nav-brand-name {
+    font-family: "Source Han Serif SC", serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--forbidden-red);
+    letter-spacing: 2px;
+}
+
+.nav-brand-sub {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 4px 8px 2px;
+}
+
+.nav-card {
+    position: relative;
+    background: #ffffff;
+    border: 1.5px solid rgba(47, 37, 34, 0.08);
+    border-radius: 12px;
+    padding: 9.5px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    user-select: none;
+    background-clip: padding-box;
+}
+
+.nav-card:hover {
+    border-color: rgba(140, 34, 48, 0.3);
+    box-shadow: 0 4px 12px rgba(140, 34, 48, 0.04);
+    transform: translateY(-2px);
+    z-index: 3;
+}
+
+.nav-card.dragging {
+    opacity: 0.45;
+    border: 1.5px dashed var(--forbidden-red);
+    background: rgba(140, 34, 48, 0.02) !important;
+    transform: scale(0.98);
+}
+
+.nav-card.nav-active {
+    border-color: var(--forbidden-red);
+    background: linear-gradient(145deg, #fffefe, #fff5f5);
+    box-shadow: 0 4px 12px rgba(140, 34, 48, 0.05);
+    background-clip: padding-box;
+    z-index: 2;
+}
+
+.nav-card-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.nav-card-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.nav-card-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.nav-card.nav-active .nav-card-label {
+    color: var(--forbidden-red);
+}
+
+.nav-card-sub {
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+
+.nav-card-insight.nav-active {
+    border-color: var(--champagne-gold);
+    background: linear-gradient(145deg, #fffdfa, #fefbf2);
+    box-shadow: 0 4px 12px rgba(212,175,55,0.08);
+    background-clip: padding-box;
+}
+
+.nav-footer {
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    margin-top: 12px;
+}
+
+#locationValue {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px dashed transparent;
+}
+
+#locationValue:hover {
+    color: var(--forbidden-red);
+    background: rgba(140, 34, 48, 0.04);
+    border-color: rgba(140, 34, 48, 0.15);
+}
+
+/* ==========================================================================
+   04. SECTION 2: 中间动态大看板 (.main-dashboard)
+   ========================================================================== */
+.main-dashboard {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 32px);
+    position: relative;
+    overflow: hidden;
+}
+
+.main-panel {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.main-panel.is-active {
+    display: flex;
+    opacity: 1;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+    flex-shrink: 0;
+}
+
+.panel-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--ink);
+    font-family: "Source Han Serif SC", serif;
+}
+
+.panel-meta {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.panel-action-btn {
+    font-size: 11px;
+    background: var(--forbidden-red);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.panel-action-btn:hover {
+    opacity: 0.9;
+}
+
+.panel-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    border-left: 3px solid var(--forbidden-red);
+    padding-left: 6px;
+    margin: 16px 0 10px 0;
+    flex-shrink: 0;
+}
+
+/* 各个面板专属样式 */
+
+/* 1. 天气面板 */
+.weather-main-card {
+    background: #ffffff;
+    border: 1px solid rgba(47, 37, 34, 0.08);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    margin-bottom: 16px;
+}
+
+.hourly-strip {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 4px;
+    flex: 1;
+}
+
+.weather-hourly-card {
+    background: #ffffff;
+    border: 1px solid rgba(47, 37, 34, 0.06);
+    border-radius: 10px;
+    padding: 12px;
+    min-width: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+}
+
+.weather-hourly-card span {
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.weather-hourly-card .temp {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+/* 2. 节气面板 */
+.jieqi-hero-card {
+    background: linear-gradient(135deg, #fffdfa, #f7f3eb);
+    border: 1px solid rgba(140, 34, 48, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.jieqi-year-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+}
+
+.jieqi-year-card {
+    background: #ffffff;
+    border: 1px solid rgba(47, 37, 34, 0.06);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.jieqi-year-card.passed {
+    opacity: 0.6;
+}
+
+.jieqi-year-card.active {
+    border-color: var(--forbidden-red);
+    background: rgba(140,34,48,0.02);
+}
+
+.jieqi-year-card .name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.jieqi-year-card.active .name {
+    color: var(--forbidden-red);
+}
+
+.jieqi-year-card .date {
+    font-size: 9px;
+    color: var(--muted);
+}
+
+/* 3. 节日面板 */
+.festival-panel-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.festival-col {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+}
+
+.festival-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+}
+
+.festival-item {
+    background: #ffffff;
+    border: 1px solid rgba(47, 37, 34, 0.06);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.2s;
+}
+
+.festival-item:hover {
+    border-color: rgba(140, 34, 48, 0.15);
+}
+
+.festival-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.festival-date-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.festival-solar-date {
+    font-size: 9px;
+    color: var(--muted);
+}
+
+.festival-days-left {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--forbidden-red);
+}
+
+.festival-days-left.today {
+    color: var(--champagne-gold);
+}
+
+/* 4. 个人信息面板 */
+.profile-bazi-display {
+    background: #ffffff;
+    border: 1px solid rgba(47, 37, 34, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+}
+
+.profile-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.profile-badge {
+    font-size: 10px;
+    background: rgba(140,34,48,0.06);
+    border: 1px solid rgba(140,34,48,0.15);
+    color: var(--forbidden-red);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.daily-note-area {
+    background: #ffffff;
+    border: 1px solid rgba(47, 37, 34, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.note-textarea {
+    width: 100%;
+    height: 80px;
+    border: 1px solid rgba(47, 37, 34, 0.15);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    color: var(--ink);
+    background: #fffdfa;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.note-textarea:focus {
+    border-color: var(--forbidden-red);
+}
+
+.note-save-btn {
+    align-self: flex-end;
+    background: linear-gradient(160deg, #fffcf8, #f8efe6);
+    border: 1px solid var(--champagne-gold);
+    color: var(--forbidden-red);
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.note-save-btn:hover {
+    background: linear-gradient(160deg, #fff5eb, #f2e3d5);
+}
+
+/* 5. 天时洞察面板 */
+.panel-insight-shell {
+    overflow: hidden;
+}
+
+.insight-prompt-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex: 1;
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+    background: linear-gradient(145deg, #fffdfa, #fdf6ed);
+    border-radius: 16px;
+    cursor: pointer;
+    padding: 40px;
+    transition: all 0.2s;
+}
+
+.insight-prompt-area:hover {
+    border-color: var(--champagne-gold);
+    box-shadow: 0 8px 24px rgba(212,175,55,0.08);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.month-selector {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.month-display {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--ink);
+    font-family: "Source Han Serif SC", serif;
+    letter-spacing: 2px;
+}
+
+.nav-btn {
+    background: var(--card);
+    border: 1px solid rgba(47, 37, 34, 0.1);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--ink);
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: var(--forbidden-red);
+    color: #fff;
+    border-color: var(--forbidden-red);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.location-badge {
+    font-size: 11px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    color: #a07c1c;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.today-btn {
+    background: var(--forbidden-red);
+    color: #white;
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #ffffff;
+    transition: all 0.2s;
+}
+
+.today-btn:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+/* 星期表头 */
+.weekday-bar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+}
+
+.weekday-bar span {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+/* 核心动态日历网格二阶演化 */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    gap: 6px;
+    flex: 1;
+}
+
+/* 单个日历格子冷峻骨架 */
+.calendar-day {
+    background: var(--card);
+    border: 1px solid rgba(47, 37, 34, 0.05);
+    border-radius: 10px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.calendar-day:hover {
+    border-color: var(--forbidden-red);
+    box-shadow: 0 4px 12px rgba(140, 34, 48, 0.06);
+    transform: scale(1.02);
+    z-index: 2;
+}
+
+/* 日历数字与天时状态 */
+.day-num {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.calendar-day.other-month {
+    opacity: 0.35;
+    /* 非本月日期淡化 */
+}
+
+.calendar-day.is-today {
+    border: 2px solid var(--forbidden-red);
+    background: linear-gradient(145deg, #ffffff, #fff9f9);
+}
+
+/* 农历与节气断语 */
+.lunar-text {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.calendar-day.has-jieqi .lunar-text {
+    color: var(--forbidden-red);
+    font-weight: 700;
+}
+
+.day-solar-fest {
+    font-size: 8px;
+    font-weight: 500;
+    color: #8a7f79;
+    white-space: normal;
+    word-break: break-all;
+    max-width: 100%;
+    margin-top: 2px;
+    line-height: 1;
+}
+
+.day-lunar-info {
+    font-size: 8px;
+    font-weight: 600;
+    white-space: normal;
+    word-break: break-all;
+    max-width: 100%;
+    margin-top: 2px;
+    line-height: 1;
+}
+
+.day-lunar-info.is-jieqi {
+    color: var(--forbidden-red);
+}
+
+.day-lunar-info.is-fest {
+    color: var(--champagne-gold);
+}
+
+/* 日历格子内的微型代办红点流 */
+.day-tasks-dots {
+    display: flex;
+    gap: 3px;
+    margin-top: 4px;
+    height: 4px;
+    align-items: center;
+}
+
+.task-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--champagne-gold);
+}
+
+.task-dot.important {
+    background: var(--forbidden-red);
+}
+
+/* ==========================================================================
+   05. SECTION 3: 右侧/下方日程管理抽屉 (.schedule-drawer)
+   ========================================================================== */
+.schedule-drawer {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    height: calc(100vh - 32px);
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-list-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.5px;
+    font-family: "Source Han Serif SC", serif;
+}
+
+.schedule-stats {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    margin-top: 4px;
+}
+
+.schedule-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.schedule-empty {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 40px;
+    line-height: 1.6;
+    border: 1px dashed rgba(138, 127, 121, 0.3);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+/* ==========================================================================
+   06. OVERLAYS: 个人命理玄同档案弹窗 (.profile-overlay)
+   ========================================================================== */
+.profile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(47, 37, 34, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.profile-window {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.profile-window-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, #faf9f6, #ffffff);
+}
+
+.profile-window-header span {
+    font-family: "Source Han Serif SC", serif;
+    font-weight: 700;
+    color: var(--forbidden-red);
+}
+
+.close-profile-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--muted);
+}
+
+/* 个人信息隐私保护磨砂遮罩 */
+.privacy-mask {
+    filter: blur(5px);
+    opacity: 0.4;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    user-select: none;
+}
+
+.privacy-mask:hover,
+.privacy-mask:focus-within {
+    filter: blur(0);
+    opacity: 1;
+}
+
+.privacy-hint {
+    font-size: 10px;
+    color: var(--champagne-gold);
+    text-align: right;
+    margin-top: -6px;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.profile-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.profile-row label {
+    font-size: 12px;
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.profile-row input,
+.profile-row select {
+    border: 1px solid rgba(47, 37, 34, 0.15);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    background: #fffdfa;
+    color: var(--ink);
+    outline: none;
+}
+
+.profile-row input:focus,
+.profile-row select:focus {
+    border-color: var(--forbidden-red);
+}
+
+/* 专业四柱八字排盘网格系统 */
+.profile-bazi-box {
+    background: #fffcf7;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 10px;
+    margin-top: 12px;
+}
+
+.bazi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.bazi-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid rgba(140, 34, 48, 0.08);
+    border-radius: 6px;
+    padding: 6px 2px;
+}
+
+.bz-header {
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    border-bottom: 1px dashed var(--line);
+    width: 80%;
+    text-align: center;
+    padding-bottom: 2px;
+}
+
+.bz-shishen {
+    font-size: 10px;
+    color: #5a4a44;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.bz-char {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--forbidden-red);
+    line-height: 1.1;
+    font-family: "Kaiti", "STKaiti", serif;
+}
+
+.bz-wuxing {
+    font-size: 9px;
+    color: var(--champagne-gold);
+    margin-top: 2px;
+    font-weight: 700;
+}
+/* 自动推演标签组 */
+.profile-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    border-left: 3px solid var(--forbidden-red);
+    padding-left: 6px;
+    margin-bottom: 10px;
+}
+
+.profile-tags-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.profile-tags-box {
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.profile-tags-box.box-advantage {
+    background: rgba(212, 175, 55, 0.04);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.profile-tags-box.box-limitation {
+    background: rgba(140, 34, 48, 0.02);
+    border: 1px solid rgba(140, 34, 48, 0.08);
+}
+
+.box-title {
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.profile-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    pointer-events: none;
+    /* 彻底锁定用户手选 */
+}
+
+.p-tag {
+    font-size: 10px;
+    background: #ffffff;
+    border: 1px solid rgba(47, 37, 34, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--ink);
+    opacity: 0.25;
+    /* 未激活状态隐入背景 */
+    transition: all 0.3s ease;
+}
+
+.p-tag.active {
+    opacity: 1;
+    border-color: var(--forbidden-red);
+    color: var(--forbidden-red);
+    font-weight: 600;
+    background: rgba(140, 34, 48, 0.02);
+}
+
+.profile-window-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: flex-end;
+    background: #faf9f6;
+}
+
+.profile-save-btn {
+    background: var(--forbidden-red);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   07. STAGE OVERLAY: 全屏时机舞台与漫游长卷 (.stage-overlay)
+   ========================================================================== */
+.stage-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, #1c1614, #2a201d);
+    /* 沉浸式暗夜星空底色 */
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+}
+
+.stage-header {
+    padding: 16px 24px;
+    background: rgba(28, 22, 20, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--pearl);
+}
+
+.stage-header span:first-child {
+    color: var(--champagne-gold);
+    letter-spacing: 1px;
+}
+
+.stage-close-btn {
+    background: transparent;
+    border: 1px solid rgba(248, 246, 242, 0.2);
+    color: var(--pearl);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stage-close-btn:hover {
+    background: var(--forbidden-red);
+    border-color: var(--forbidden-red);
+}
+
+.stage-body {
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+    /* 由内部 JS 控制横向拖拽漫游 */
+    position: relative;
+}
+
+/* 灵牌（塔罗）3D 翻转动效物理模型 */
+.tarot-card-wrapper {
+    width: 220px;
+    height: 360px;
+    perspective: 1000px;
+    cursor: pointer;
+}
+
+.tarot-card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tarot-card-wrapper.is-flipped .tarot-card {
+    transform: rotateY(180deg);
+}
+
+.tarot-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 14px;
+    border: 2px solid var(--champagne-gold);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* 牌背 - 冷峻中式图腾 */
+.tarot-back {
+    background: #231b18;
+    justify-content: center;
+    align-items: center;
+}
+
+.tarot-back-pattern {
+    width: 80%;
+    height: 80%;
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+    position: relative;
+}
+
+.tarot-back-pattern::after {
+    content: "時行";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(212, 175, 55, 0.4);
+    font-family: serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+}
+
+/* 牌面 - 宣纸长卷质感 */
+.tarot-front {
+    background: var(--pearl);
+    transform: rotateY(180deg);
+    color: var(--ink);
+    justify-content: flex-start;
+}
+
+.tarot-type-badge {
+    font-size: 10px;
+    background: var(--forbidden-red);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    align-self: flex-start;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.tarot-title {
+    font-family: "Source Han Serif SC", serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--forbidden-red);
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+}
+
+.tarot-desc {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #4a3e3b;
+    text-align: justify;
+}
+
+/* 圆盘绕线时钟形态下的卡片微调 */
+.tarot-card-wrapper.round-card {
+    transform: scale(0.8);
+}
+
+/* 黄历大模型报告长卷排版 */
+.fortune-report-container {
+    max-width: 720px;
+    margin: 40px auto;
+    background: var(--pearl);
+    padding: 40px 50px;
+    border-radius: 4px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    border-left: 4px solid var(--forbidden-red);
+}
+
+.fortune-section-title {
+    font-family: serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--forbidden-red);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fortune-text {
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--ink);
+    text-align: justify;
+}
+
+.fortune-footer-stamp {
+    text-align: right;
+    margin-top: 40px;
+    font-family: "Kaiti", serif;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   08. ANIMATIONS & RESPONSIVE (动效与移动端自适应)
+   ========================================================================== */
+@keyframes modalSlideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* 极简降级：手机尺寸下的响应式变轨 */
+@media (max-width: 1024px) {
+    .content-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .detail-panel,
+    .calendar-main,
+    .schedule-drawer {
+        height: auto;
+        position: static;
+    }
+
+    .calendar-grid {
+        height: 60vh;
+        /* 确保手机端日历格依然有足够的触控纵深 */
+    }
+}
+
+/* ==========================================================================
+   09. ADDITIONS (日程新增与选中样式追加)
+   ========================================================================== */
+#taskModal .profile-window {
+    border: 1px solid var(--line);
+    background: #ffffff;
+}
+
+.calendar-day.selected {
+    border: 2px solid var(--champagne-gold) !important;
+    background: linear-gradient(145deg, #fffcf7, #fdf6ed) !important;
+    box-shadow: 0 6px 16px rgba(212, 175, 55, 0.12);
+}
+
+/* ==========================================================================
+   10. CHAT PANEL STYLES (聊天面板样式定义)
+   ========================================================================== */
+.chat-messages::-webkit-scrollbar {
+    width: 4px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(138, 127, 121, 0.2);
+    border-radius: 4px;
+}
+.chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#chatInput:focus {
+    border-color: var(--forbidden-red) !important;
+    box-shadow: 0 0 0 3px rgba(140, 34, 48, 0.08);
+}
+
+.chat-message {
+    animation: fadeIn 0.3s ease;
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.chat-message.user .msg-bubble {
+    background: linear-gradient(145deg, #fff9f9, #fff0f1) !important;
+    border: 1px solid rgba(140, 34, 48, 0.2) !important;
+    border-radius: 12px 12px 0 12px !important;
+    box-shadow: 0 4px 12px rgba(140, 34, 48, 0.05) !important;
+}
+
+/* ==========================================================================
+   11. LUNAR PANEL & SPLIT LAYOUT STYLES (阴历面板与分栏自适应)
+   ========================================================================== */
+.lunar-split-container {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+    margin-top: 12px;
+}
+
+.lunar-detail-card::-webkit-scrollbar {
+    width: 4px;
+}
+.lunar-detail-card::-webkit-scrollbar-thumb {
+    background: rgba(140, 34, 48, 0.15);
+    border-radius: 4px;
+}
+.lunar-detail-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (max-width: 768px) {
+    .lunar-split-container {
+        flex-direction: column !important;
+        overflow-y: auto;
+    }
+    .lunar-split-container > div {
+        flex: none !important;
+        width: 100% !important;
+    }
+    #lunarCalendarGrid {
+        height: 60vh;
+    }
+    .lunar-detail-card {
+        margin-top: 10px;
+        max-height: 300px;
+    }
+}
+
+/* Lunar Detail Card Full Styling */
+.lunar-detail-card {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: rgba(140, 34, 48, 0.02);
+    border: 1.5px solid rgba(140, 34, 48, 0.08);
+    border-radius: 16px;
+    padding: 18px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* Lunar 5-day columns grid overrides */
+#lunarCalendarGrid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    grid-template-rows: repeat(7, 1fr) !important;
+}
+
+#lunarWeekdayBar {
+    grid-template-columns: repeat(5, 1fr) !important;
+}
+
+/* ===========================================
+   Settings Component Styles
+   =========================================== */
+
+/* Settings Window - wider than default profile window */
+.settings-window {
+  max-width: 680px !important;
+  width: 92vw;
+}
+
+/* Settings Layout - Flex container for sidebar + content */
+.settings-layout {
+  display: flex;
+  min-height: 420px;
+  max-height: 65vh;
+  background: #fff;
+}
+
+/* Settings Sidebar - Left tab navigation */
+.settings-sidebar {
+  width: 140px;
+  min-width: 140px;
+  background: #faf9f7;
+  border-right: 1px solid rgba(47, 37, 34, 0.06);
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+  user-select: none;
+}
+
+.settings-tab:hover {
+  background: rgba(47, 37, 34, 0.03);
+  color: var(--ink);
+}
+
+.settings-tab.active {
+  color: var(--forbidden-red);
+  font-weight: 700;
+  background: rgba(140, 34, 48, 0.04);
+  border-left-color: var(--forbidden-red);
+}
+
+.settings-tab .tab-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.settings-tab .tab-label {
+  white-space: nowrap;
+}
+
+/* Settings Content - Right pane area */
+.settings-content {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+/* Scrollbar styling for settings content */
+.settings-content::-webkit-scrollbar {
+  width: 4px;
+}
+.settings-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.settings-content::-webkit-scrollbar-thumb {
+  background: rgba(138, 127, 121, 0.2);
+  border-radius: 4px;
+}
+.settings-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(138, 127, 121, 0.4);
+}
+
+/* Settings Panes - show/hide */
+.settings-pane {
+  display: none;
+}
+.settings-pane.active {
+  display: block;
+  animation: settingsFadeIn 0.2s ease;
+}
+
+@keyframes settingsFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mode Selector - Segmented Control */
+.mode-selector {
+  display: inline-flex;
+  border: 1px solid rgba(47, 37, 34, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #faf9f7;
+}
+
+.mode-btn {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.mode-btn:hover {
+  background: rgba(47, 37, 34, 0.04);
+}
+
+.mode-btn.active {
+  background: var(--forbidden-red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(140, 34, 48, 0.2);
+}
+
+/* Settings Action Button */
+.settings-action-btn {
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--forbidden-red);
+  background: rgba(140, 34, 48, 0.06);
+  color: var(--forbidden-red);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.settings-action-btn:hover {
+  background: var(--forbidden-red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(140, 34, 48, 0.25);
+}
+
+.settings-action-btn:active {
+  transform: scale(0.97);
+}
+
+.settings-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Location Status Card */
+.location-status-card {
+  background: #faf9f7;
+  border: 1px solid rgba(47, 37, 34, 0.06);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.location-status-card .status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.location-status-card .status-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.location-status-card .status-value {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Test Connection Box */
+.test-connection-box {
+  background: #faf9f7;
+  border: 1px solid rgba(47, 37, 34, 0.06);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+/* Connection test result states */
+.api-test-loading {
+  color: var(--champagne-gold) !important;
+  font-weight: 600;
+}
+
+.api-test-success {
+  color: #1e7e34 !important;
+  font-weight: 600;
+}
+
+.api-test-error {
+  color: var(--forbidden-red) !important;
+  font-weight: 600;
+}
+
+/* Loading animation for connection test */
+@keyframes testPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.api-test-loading {
+  animation: testPulse 1.2s ease-in-out infinite;
+}
+
+/* Responsive: collapse sidebar on narrow screens */
+@media (max-width: 560px) {
+  .settings-layout {
+    flex-direction: column;
+  }
+  .settings-sidebar {
+    width: 100%;
+    min-width: unset;
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(47, 37, 34, 0.06);
+    padding: 8px;
+    gap: 0;
+  }
+  .settings-tab {
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 12px;
+    flex-shrink: 0;
+  }
+  .settings-tab.active {
+    border-left-color: transparent;
+    border-bottom-color: var(--forbidden-red);
+  }
+  .settings-window {
+    max-width: 95vw !important;
+  }
+}
