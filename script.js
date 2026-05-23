@@ -57,6 +57,71 @@ async function fetchDeepSeekChat(messages) {
 
 (() => {
   // ==========================================
+  // FESTIVAL_INTRO (雅致中式节日与节气简介库)
+  // ==========================================
+  const FESTIVAL_INTRO = {
+    // --- 32个普通节日 (0 ~ 31) ---
+    "元旦": "公历的新年，标志着新的一年的开始，万象更新。",
+    "春节": "中华民族最隆重的传统节日，岁首迎新，阖家团圆。",
+    "元宵节": "农历正月十五，赏花灯、吃元宵，象征团圆美满。",
+    "龙抬头": "农历二月二，春回大地，万物生机盎然，剃头迎祥。",
+    "花朝节": "农历二月十二，百花仙子诞辰，踏青赏花，迎接春光。",
+    "上巳节": "农历三月三，祓除畔浴，祈福春游，春意盎然。",
+    "佛诞节": "农历四月初八，释迦牟尼佛诞辰，浴佛祈福，积德行善。",
+    "端午节": "农历五月初五，赛龙舟、挂艾草、吃粽子，辟邪防毒。",
+    "七夕节": "农历七月初七，乞巧穿针，相传牛郎织女鹊桥相会。",
+    "中元节": "农历七月十五，祭祀先人，缅怀祖德，祈求平安。",
+    "中秋节": "农历八月十五，阖家团圆，赏月吃月饼，寄托相思。",
+    "重阳节": "农历九月初九，登高祈福，赏菊佩茱萸，敬老感恩。",
+    "寒衣节": "农历十月初一，祭扫祖先，送寒衣避寒，寄托哀思。",
+    "下元节": "农历十月十五，水官大帝诞辰，消灾祈福，感恩敬天。",
+    "腊八节": "农历十二月初八，吃腊八粥，祈求丰收与来年安康。",
+    "小年": "农历腊月二十三或二十四，祭灶扫尘，准备迎接春节。",
+    "除夕": "农历岁末最后一天，守岁吃年夜饭，辞旧迎新。",
+    "情人节": "西方的浪漫节日，表达爱意，互赠礼品。",
+    "妇女节": "国际劳动妇女节，庆祝女性在各领域做出的贡献。",
+    "植树节": "倡导绿色环保，动员群众植树造林，保护生态。",
+    "愚人节": "西方传统民间节日，幽默开玩笑，增添欢乐气氛。",
+    "劳动节": "国际劳动节，向所有辛勤付出的劳动者致敬。",
+    "青年节": "纪念五四运动，弘扬青春奋斗与爱国精神。",
+    "儿童节": "关爱儿童成长，庆祝孩子们的节日，童心未泯。",
+    "建党节": "中国共产党成立纪念日，回顾奋斗历程，坚定信念。",
+    "建军节": "中国人民解放军建军纪念日，致敬钢铁长城。",
+    "教师节": "向辛勤耕耘的园丁致敬，弘扬尊师重教的传统。",
+    "国庆节": "中华人民共和国国庆日，举国同庆祖国繁荣昌盛。",
+    "万圣节": "西方的传统节日，化装舞会、敲门讨糖，极具趣味性。",
+    "感恩节": "西方传统节日，感恩生命中的一切美好与陪伴。",
+    "圣诞节": "西方传统节日，欢度冬日，分享爱与祝福。",
+    "情人": "关于爱与浪漫的美好时光，温馨相伴。",
+
+    // --- 二十四节气 (32 以后) ---
+    "立春": "春季的开始，万物复苏，冰雪融化，大自然生机萌动。",
+    "雨水": "气温回升，冰雪融化，降雨开始增多，大地受雨水滋润。",
+    "惊蛰": "春雷始鸣，惊醒蛰伏土中的昆虫，气温转暖，春耕开始。",
+    "春分": "太阳直射赤道，昼夜平分，标志着春季过半，春意渐浓。",
+    "清明": "天清地明，天气晴朗，草木繁茂，既是节气也是祭祖节日。",
+    "谷雨": "雨水滋润大地，谷物得以生长，是春季的最后一个节气。",
+    "立夏": "夏季的开始，万物生长进入旺季，温度显著升高。",
+    "小满": "夏熟作物的籽粒开始灌浆饱满，但还未完全成熟。",
+    "芒种": "有芒作物抢收，夏播作物抢种，进入最繁忙的农忙时节。",
+    "夏至": "太阳直射北回归线，北半球昼最长、夜最短，盛夏开启。",
+    "小暑": "气候开始炎热，但还未到最热的时候，盛夏渐近。",
+    "大暑": "一年中最炎热的时期，酷暑难耐，湿热蒸腾达到顶峰。",
+    "立秋": "秋季的开始，气温由热转凉，万物开始结实成熟。",
+    "处暑": "“处”即终止，表示炎热的天气即将过去，秋意渐起。",
+    "白露": "气温渐凉，夜间草木上开始形成晶莹的露珠，进入凉爽秋季。",
+    "秋分": "太阳再次直射赤道，昼夜平分，秋意正浓，天高气爽。",
+    "寒露": "气温比白露更低，露水寒冷将凝结成霜，寒意渐浓。",
+    "霜降": "天气渐冷，大地开始结霜，秋天向冬天过渡的标志。",
+    "立冬": "冬季的开始，草木凋零，万物进入规避寒冷、闭藏的阶段。",
+    "小雪": "气温降至零度以下，开始出现降雪，但雪量尚小。",
+    "大雪": "降雪的可能性 and 降雪量增多，积雪消融减慢，冬意深浓。",
+    "冬至": "太阳直射南回归线，北半球夜最长、昼最短，冬节饺子御寒。",
+    "小寒": "标志着一年中最寒冷的时段即将开始，寒气逼人。",
+    "大寒": "一年中最后一个节气，也是最寒冷的时期，腊尽春回。"
+  };
+
+  // ==========================================
   // Ⅱ. 全局状态与 DOM 绑定
   // ==========================================
   const d = document, get = id => d.getElementById(id);
@@ -221,7 +286,7 @@ async function fetchDeepSeekChat(messages) {
 
       // 公历节日
       const sFests = solarObj.getFestivals().filter(Boolean);
-      const solarFestHtml = sFests.length ? `<span class="day-solar-fest" title="${sFests.join('/')}">${sFests[0]}</span>` : '';
+      const solarFestHtml = sFests.length ? `<span class="day-solar-fest">${sFests[0]}</span>` : '';
 
       // 农历与节气信息
       const lunarDayText = lunar.getDay() === 1 ? lunar.getMonthInChinese() + '月' : lunar.getDayInChinese();
@@ -230,7 +295,7 @@ async function fetchDeepSeekChat(messages) {
       let lunarInfoHtml = '';
       if (lInfo) {
         const isJieQi = lInfo === jieqi;
-        lunarInfoHtml = `<span class="day-lunar-info ${isJieQi ? 'is-jieqi' : 'is-fest'}" title="${lInfo}">${lInfo}</span>`;
+        lunarInfoHtml = `<span class="day-lunar-info ${isJieQi ? 'is-jieqi' : 'is-fest'}">${lInfo}</span>`;
       }
 
       let dotsHtml = dayTasks.map(t => `<div class="task-dot ${t.isImportant ? 'important' : ''}"></div>`).join('');
@@ -1886,6 +1951,98 @@ ${dateContext}`
       }
     }
   }
+
+  // ==========================================
+  // Ⅵ. 雅致中式节日与节气悬浮提示框 (Tooltip)
+  // ==========================================
+  let tooltipEl = null;
+
+  function showTooltip(target, html) {
+    if (!tooltipEl) {
+      tooltipEl = d.createElement('div');
+      tooltipEl.className = 'festival-tooltip';
+      d.body.appendChild(tooltipEl);
+    }
+    
+    tooltipEl.innerHTML = html;
+    tooltipEl.style.display = 'block';
+    
+    // 计算位置
+    const rect = target.getBoundingClientRect();
+    const scrollLeft = window.pageXOffset || d.documentElement.scrollLeft;
+    const scrollTop = window.pageYOffset || d.documentElement.scrollTop;
+    
+    const tooltipWidth = tooltipEl.offsetWidth || 180;
+    const tooltipHeight = tooltipEl.offsetHeight || 60;
+    
+    let left = rect.left + rect.width / 2 - tooltipWidth / 2 + scrollLeft;
+    let top = rect.top - tooltipHeight - 8 + scrollTop;
+    
+    // 边界碰撞检测
+    if (left < 10) left = 10;
+    if (left + tooltipWidth > window.innerWidth - 10) {
+      left = window.innerWidth - tooltipWidth - 10;
+    }
+    if (rect.top - tooltipHeight - 8 < 10) {
+      top = rect.bottom + 8 + scrollTop;
+    }
+    
+    tooltipEl.style.left = `${left}px`;
+    tooltipEl.style.top = `${top}px`;
+    
+    // 强制重绘，触发 transition 渐显动画
+    tooltipEl.offsetHeight; 
+    tooltipEl.classList.add('tooltip-show');
+  }
+
+  function hideTooltip() {
+    if (tooltipEl) {
+      tooltipEl.classList.remove('tooltip-show');
+      const onTransitionEnd = () => {
+        if (!tooltipEl.classList.contains('tooltip-show')) {
+          tooltipEl.style.display = 'none';
+        }
+        tooltipEl.removeEventListener('transitionend', onTransitionEnd);
+      };
+      tooltipEl.addEventListener('transitionend', onTransitionEnd);
+    }
+  }
+
+  // 绑定全局鼠标滑入监听器（事件委托）
+  d.body.addEventListener('mouseover', e => {
+    const target = e.target.closest('.day-solar-fest, .day-lunar-info, .festival-name');
+    if (!target) return;
+    
+    const text = target.textContent.trim();
+    const festName = text.split(' ')[0].replace(/[(（].*?[)）]/, '');
+    
+    const intro = FESTIVAL_INTRO[festName];
+    if (!intro) return;
+    
+    const isJieqi = target.classList.contains('is-jieqi') || target.classList.contains('has-jieqi') || 
+                    Object.keys(FESTIVAL_INTRO).slice(32).includes(festName);
+    const typeTag = isJieqi ? "节令" : "节日";
+    
+    const html = `
+      <div class="tooltip-title">
+        <span class="tooltip-name">${festName}</span>
+        <span class="tooltip-tag">${typeTag}</span>
+      </div>
+      <div class="tooltip-content">${intro}</div>
+    `;
+    
+    showTooltip(target, html);
+  });
+
+  // 鼠标移出时隐藏，增加防抖逻辑防止子节点移动触发闪烁
+  d.body.addEventListener('mouseout', e => {
+    const target = e.target.closest('.day-solar-fest, .day-lunar-info, .festival-name');
+    if (!target) return;
+    
+    if (!e.relatedTarget || !target.contains(e.relatedTarget)) {
+      hideTooltip();
+    }
+  });
 
   // 启动时行 OS
   init();
