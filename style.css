@@ -674,8 +674,9 @@ body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(6, 1fr);
-    gap: 6px;
+    gap: 4px; /* 从 6px 降低到 4px */
     flex: 1;
+    max-height: 330px; /* 限制日历最大高度，防止过度霸占空间 */
 }
 
 /* 单个日历格子冷峻骨架 */
@@ -683,7 +684,7 @@ body {
     background: var(--card);
     border: 1px solid rgba(47, 37, 34, 0.05);
     border-radius: 10px;
-    padding: 6px;
+    padding: 4px; /* 从 6px 降低到 4px */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -702,7 +703,7 @@ body {
 
 /* 日历数字与天时状态 */
 .day-num {
-    font-size: 14px;
+    font-size: 13px; /* 从 14px 降低到 13px */
     font-weight: 700;
     color: var(--ink);
 }
@@ -719,7 +720,7 @@ body {
 
 /* 农历与节气断语 */
 .lunar-text {
-    font-size: 9px;
+    font-size: 8px; /* 从 9px 降低到 8px */
     color: var(--muted);
     text-align: right;
     white-space: nowrap;
@@ -739,8 +740,8 @@ body {
     white-space: normal;
     word-break: break-all;
     max-width: 100%;
-    margin-top: 2px;
-    line-height: 1;
+    margin-top: 1px;
+    line-height: 1.1;
 }
 
 .day-lunar-info {
@@ -749,8 +750,8 @@ body {
     white-space: normal;
     word-break: break-all;
     max-width: 100%;
-    margin-top: 2px;
-    line-height: 1;
+    margin-top: 1px;
+    line-height: 1.1;
 }
 
 .day-lunar-info.is-jieqi {
@@ -1295,7 +1296,7 @@ body {
 }
 
 /* 极简降级：手机尺寸下的响应式变轨 */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .content-layout {
         grid-template-columns: 1fr;
         height: auto;
@@ -1547,21 +1548,39 @@ body {
     background: transparent;
 }
 
-@media (max-width: 1024px) {
+/* 垂直排列状态下的高度精准分配 */
+@media (max-width: 1200px) {
     .calendar-layout-container {
+        display: flex;
         flex-direction: column;
-        overflow-y: auto;
+        height: 100%;
+        width: 100%;
+        overflow: hidden; /* 防止容器本身产生滚动条 */
     }
-    .calendar-main-section, .calendar-detail-section {
+    /* 日历区域：高度自适应，不拉伸 */
+    .calendar-main-section {
         flex: none;
         width: 100%;
+        height: auto;
     }
-    .calendar-main-section .calendar-grid {
-        height: 60vh;
-    }
-    .lunar-detail-card {
+    /* 黄历区域：精准占用除日历外的所有剩余高度 */
+    .calendar-detail-section {
+        flex: 1;
+        min-height: 0; /* 关键：允许 flex 子项缩小到其内容高度以下 */
+        width: 100%;
         margin-top: 10px;
-        max-height: 300px;
+    }
+    /* 黄历卡片：撑满父容器，并在宜忌内容过多时，支持内部独立滚动 */
+    .lunar-detail-card {
+        height: 100%;
+        max-height: 100% !important;
+        padding: 12px 16px; /* 适当紧凑化卡片内边距 */
+        gap: 10px; /* 缩减卡片内元素间距 */
+        background: rgba(140, 34, 48, 0.02);
+        border: 1.5px solid rgba(140, 34, 48, 0.08);
+        border-radius: 16px;
+        box-sizing: border-box;
+        overflow-y: auto; /* 宜忌文字超长时，在卡片内部滚动 */
     }
 }
 
