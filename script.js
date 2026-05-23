@@ -39,6 +39,22 @@ async function fetchTimeInsight(contextText) {
   return JSON.parse(rawText);
 }
 
+async function fetchDeepSeekChat(messages) {
+  const key = localStorage.getItem('shixing_api_key') || INSIGHT_CONFIG.DEFAULT_API_KEY;
+  let url = localStorage.getItem('shixing_api_host') || INSIGHT_CONFIG.API_URL;
+  if (!url.endsWith('/chat/completions')) {
+    url = url.replace(/\/+$/, '') + '/chat/completions';
+  }
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+    body: JSON.stringify({ model: INSIGHT_CONFIG.MODEL, messages: messages, stream: false })
+  });
+  if (!response.ok) throw new Error(`API Error: ${response.status}`);
+  const data = await response.json();
+  return data.choices[0].message.content.trim();
+}
+
 (() => {
   // ==========================================
   // Ⅱ. 全局状态与 DOM 绑定
@@ -58,6 +74,7 @@ async function fetchTimeInsight(contextText) {
   let userGeo = { latitude: 39.9042, longitude: 116.4074, province: '北京市', city: '北京市' };
   let isAiLoading = false, dailyTarotData = null, isRoundMode = false;
   let activePanelId = 'calendar';
+  let chatHistory = [];
   
   const ymd = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
 
@@ -252,7 +269,6 @@ async function fetchTimeInsight(contextText) {
         
         // Re-render grids to ensure selected state highlights correctly
         renderCalendar(currentYear, currentMonth);
-        renderLunarCalendar();
       };
       calendarGrid.appendChild(cell);
     }
@@ -295,115 +311,6 @@ async function fetchTimeInsight(contextText) {
         </div>
       </div>
     `;
-  }
-
-  function renderLunarCalendar() {
-    const grid = get('lunarCalendarGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    
-    const monthGroupEl = get('lunarMonthGroupText');
-    const firstDayLunar = Lunar.fromYmd(currentLunarYear, currentLunarMonth, 1);
-    if (monthGroupEl) {
-      monthGroupEl.textContent = `${currentLunarYear}年 · ${firstDayLunar.getYearInGanZhi()}年 · ${firstDayLunar.getMonthInChinese()}月`;
-    }
-    
-    // Find the 1st day of this target Lunar Month
-    const firstDaySolar = firstDayLunar.getSolar();
-    
-    // Start rendering 35 cells from firstDaySolar
-    let currentDate = new Date(firstDaySolar.getYear(), firstDaySolar.getMonth() - 1, firstDaySolar.getDay());
-    
-    const totalCells = 35; // 5 columns * 7 rows = 35 cells
-    for (let i = 0; i < totalCells; i++) {
-      const cell = d.createElement('div');
-      cell.className = 'calendar-day';
-      
-      const cYear = currentDate.getFullYear();
-      const cMonth = currentDate.getMonth();
-      const cDate = currentDate.getDate();
-      
-      const solarObj = Solar.fromYmd(cYear, cMonth + 1, cDate);
-      const lunar = solarObj.getLunar();
-      const jieqi = lunar.getJieQi();
-      const cellDateKey = `${cYear}-${cMonth + 1}-${cDate}`;
-      const dayTasks = tasks.filter(t => t.date === cellDateKey);
-      
-      if (cYear === now.getFullYear() && cMonth === now.getMonth() && cDate === now.getDate()) {
-        cell.classList.add('is-today');
-      }
-      if (selectedTaskDate && cYear === selectedTaskDate.getFullYear() && cMonth === selectedTaskDate.getMonth() && cDate === selectedTaskDate.getDate()) {
-        cell.classList.add('selected');
-      }
-      
-      const isCurrentLunarMonth = (lunar.getYear() === currentLunarYear && lunar.getMonth() === currentLunarMonth);
-      if (!isCurrentLunarMonth) {
-        cell.classList.add('other-month');
-      }
-      
-      if (jieqi) cell.classList.add('has-jieqi');
-      
-      const customLFests = getLunarFestivalsForDate(lunar);
-      const isFestOrJieqi = customLFests[0] || jieqi;
-      
-      const lunarMainText = customLFests[0] || jieqi || (lunar.getDay() === 1 ? lunar.getMonthInChinese() + '月' : lunar.getDayInChinese());
-      const solarSubText = cDate;
-      
-      let lunarInfoHtml = '';
-      if (isFestOrJieqi) {
-        const isJieQi = !customLFests[0];
-        lunarInfoHtml = `<span class="day-lunar-info ${isJieQi ? 'is-jieqi' : 'is-fest'}">${lunarMainText}</span>`;
-      } else {
-        lunarInfoHtml = `<span style="font-size: 13px; font-weight: 700; color: var(--ink);">${lunarMainText}</span>`;
-      }
-      
-      const sFests = solarObj.getFestivals().filter(Boolean);
-      const solarFestHtml = sFests.length ? `<span class="day-solar-fest" title="${sFests.join('/')}">${sFests[0]}</span>` : '';
-      
-      let dotsHtml = dayTasks.map(t => `<div class="task-dot ${t.isImportant ? 'important' : ''}"></div>`).join('');
-      
-      cell.innerHTML = `
-        <div style="display:flex; flex-direction:column; justify-content:flex-start; width:100%; flex-grow:1; gap:2px; min-height:32px; box-sizing:border-box;">
-          <div style="display:flex; justify-content:space-between; align-items:baseline; width:100%;">
-            ${lunarInfoHtml}
-            <span class="day-num" style="font-size: 11px; font-weight: 500; color: var(--muted);">${solarSubText}</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%; gap:4px; margin-top: 4px;">
-            <div style="flex:1; min-width:0; text-align:left;">
-              ${solarFestHtml}
-            </div>
-          </div>
-        </div>
-        <div class="day-tasks-dots">${dotsHtml}</div>
-      `;
-      
-      const clickedYear = cYear;
-      const clickedMonth = cMonth;
-      const clickedDate = cDate;
-      
-      cell.onclick = () => {
-        d.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('selected'));
-        selectedTaskDate = new Date(clickedYear, clickedMonth, clickedDate);
-        
-        const clickLunar = Solar.fromYmd(clickedYear, clickedMonth + 1, clickedDate).getLunar();
-        currentLunarYear = clickLunar.getYear();
-        currentLunarMonth = clickLunar.getMonth();
-        
-        currentYear = clickedYear;
-        currentMonth = clickedMonth;
-        
-        updateDetailPanel(selectedTaskDate);
-        renderTasks(selectedTaskDate);
-        loadDailyStatusForSelectedDate();
-        updateLunarDetailCard(selectedTaskDate);
-        
-        renderCalendar(currentYear, currentMonth);
-        renderLunarCalendar();
-      };
-      
-      grid.appendChild(cell);
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
   }
 
   function updateNavSummaries(date) {
@@ -732,9 +639,6 @@ async function fetchTimeInsight(contextText) {
     switch (activePanelId) {
       case 'calendar':
         renderCalendar(currentYear, currentMonth);
-        break;
-      case 'lunar':
-        renderLunarCalendar();
         updateLunarDetailCard(selectedTaskDate);
         break;
       case 'weather':
@@ -893,7 +797,6 @@ async function fetchTimeInsight(contextText) {
       localStorage.setItem('shixing_tasks', JSON.stringify(tasks));
       renderTasks(selectedTaskDate);
       renderCalendar(currentYear, currentMonth);
-      renderLunarCalendar();
     }
   };
 
@@ -1373,7 +1276,6 @@ async function fetchTimeInsight(contextText) {
       
       renderTasks(selectedTaskDate || now);
       renderCalendar(currentYear, currentMonth);
-      renderLunarCalendar();
     };
   }
 
@@ -1477,7 +1379,6 @@ async function fetchTimeInsight(contextText) {
     restoreNavOrder();
     initDragAndDrop();
     renderCalendar(currentYear, currentMonth);
-    renderLunarCalendar();
     initGeolocation();
     initTaskModal();
     updateDetailPanel(now);
@@ -1513,9 +1414,20 @@ async function fetchTimeInsight(contextText) {
       const midLunar = midSolar.getLunar();
       currentLunarYear = midLunar.getYear();
       currentLunarMonth = midLunar.getMonth();
+
+      // 同步移动 selectedTaskDate 至新月份的同一天或最后一天
+      let targetDay = selectedTaskDate ? selectedTaskDate.getDate() : 1;
+      const maxDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+      if (targetDay > maxDays) targetDay = maxDays;
+      selectedTaskDate = new Date(currentYear, currentMonth, targetDay);
+
       renderCalendar(currentYear, currentMonth); 
-      renderLunarCalendar(); 
+      updateLunarDetailCard(selectedTaskDate);
+      renderTasks(selectedTaskDate);
+      updateDetailPanel(selectedTaskDate);
+      loadDailyStatusForSelectedDate();
     };
+
     nextBtn.onclick = () => { 
       currentMonth++; 
       if (currentMonth > 11) { currentMonth = 0; currentYear++; } 
@@ -1523,9 +1435,20 @@ async function fetchTimeInsight(contextText) {
       const midLunar = midSolar.getLunar();
       currentLunarYear = midLunar.getYear();
       currentLunarMonth = midLunar.getMonth();
+
+      // 同步移动 selectedTaskDate 至新月份 the same day or max day
+      let targetDay = selectedTaskDate ? selectedTaskDate.getDate() : 1;
+      const maxDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+      if (targetDay > maxDays) targetDay = maxDays;
+      selectedTaskDate = new Date(currentYear, currentMonth, targetDay);
+
       renderCalendar(currentYear, currentMonth); 
-      renderLunarCalendar(); 
+      updateLunarDetailCard(selectedTaskDate);
+      renderTasks(selectedTaskDate);
+      updateDetailPanel(selectedTaskDate);
+      loadDailyStatusForSelectedDate();
     };
+
     todayBtn.onclick = () => { 
       currentYear = now.getFullYear(); 
       currentMonth = now.getMonth(); 
@@ -1533,96 +1456,16 @@ async function fetchTimeInsight(contextText) {
       const todayLunar = Solar.fromYmd(now.getFullYear(), now.getMonth() + 1, now.getDate()).getLunar();
       currentLunarYear = todayLunar.getYear();
       currentLunarMonth = todayLunar.getMonth();
+
       renderCalendar(currentYear, currentMonth); 
-      renderLunarCalendar(); 
       updateDetailPanel(now); 
       renderTasks(now); 
       loadDailyStatusForSelectedDate();
       updateLunarDetailCard(now);
-      if (activePanelId !== 'calendar' && activePanelId !== 'lunar') {
+      if (activePanelId !== 'calendar') {
         refreshActivePanel();
       }
     };
-
-    // 阴历日历翻页
-    const lpBtn = get('lunarPrevBtn');
-    if (lpBtn) {
-      lpBtn.onclick = () => {
-        const firstDayLunar = Lunar.fromYmd(currentLunarYear, currentLunarMonth, 1);
-        const prevLunarDay = firstDayLunar.next(-1);
-        currentLunarYear = prevLunarDay.getYear();
-        currentLunarMonth = prevLunarDay.getMonth();
-        
-        const targetFirstDayLunar = Lunar.fromYmd(currentLunarYear, currentLunarMonth, 1);
-        const targetFirstDaySolar = targetFirstDayLunar.getSolar();
-        
-        selectedTaskDate = new Date(targetFirstDaySolar.getYear(), targetFirstDaySolar.getMonth() - 1, targetFirstDaySolar.getDay());
-        currentYear = targetFirstDaySolar.getYear();
-        currentMonth = targetFirstDaySolar.getMonth() - 1;
-        
-        updateDetailPanel(selectedTaskDate);
-        renderTasks(selectedTaskDate);
-        loadDailyStatusForSelectedDate();
-        updateLunarDetailCard(selectedTaskDate);
-        
-        renderCalendar(currentYear, currentMonth);
-        renderLunarCalendar();
-        
-        if (activePanelId !== 'calendar' && activePanelId !== 'lunar') {
-          refreshActivePanel();
-        }
-      };
-    }
-    const lnBtn = get('lunarNextBtn');
-    if (lnBtn) {
-      lnBtn.onclick = () => {
-        const firstDayLunar = Lunar.fromYmd(currentLunarYear, currentLunarMonth, 1);
-        const nextLunarDay = firstDayLunar.next(33);
-        currentLunarYear = nextLunarDay.getYear();
-        currentLunarMonth = nextLunarDay.getMonth();
-        
-        const targetFirstDayLunar = Lunar.fromYmd(currentLunarYear, currentLunarMonth, 1);
-        const targetFirstDaySolar = targetFirstDayLunar.getSolar();
-        
-        selectedTaskDate = new Date(targetFirstDaySolar.getYear(), targetFirstDaySolar.getMonth() - 1, targetFirstDaySolar.getDay());
-        currentYear = targetFirstDaySolar.getYear();
-        currentMonth = targetFirstDaySolar.getMonth() - 1;
-        
-        updateDetailPanel(selectedTaskDate);
-        renderTasks(selectedTaskDate);
-        loadDailyStatusForSelectedDate();
-        updateLunarDetailCard(selectedTaskDate);
-        
-        renderCalendar(currentYear, currentMonth);
-        renderLunarCalendar();
-        
-        if (activePanelId !== 'calendar' && activePanelId !== 'lunar') {
-          refreshActivePanel();
-        }
-      };
-    }
-    const ltBtn = get('lunarTodayBtn');
-    if (ltBtn) {
-      ltBtn.onclick = () => { 
-        currentYear = now.getFullYear(); 
-        currentMonth = now.getMonth(); 
-        selectedTaskDate = now; 
-        
-        const todayLunar = Solar.fromYmd(now.getFullYear(), now.getMonth() + 1, now.getDate()).getLunar();
-        currentLunarYear = todayLunar.getYear();
-        currentLunarMonth = todayLunar.getMonth();
-        
-        renderCalendar(currentYear, currentMonth); 
-        renderLunarCalendar(); 
-        updateDetailPanel(now); 
-        renderTasks(now); 
-        loadDailyStatusForSelectedDate();
-        updateLunarDetailCard(now);
-        if (activePanelId !== 'calendar' && activePanelId !== 'lunar') {
-          refreshActivePanel();
-        }
-      };
-    }
 
     // ==========================================
     // 系统设置组件 - 统一绑定
@@ -1939,14 +1782,12 @@ async function fetchTimeInsight(contextText) {
       const appendMessage = (sender, text, isUser = false) => {
         const msgDiv = d.createElement('div');
         msgDiv.className = `chat-message ${isUser ? 'user' : 'system'}`;
-        msgDiv.style.cssText = `display: flex; flex-direction: column; gap: 4px; ${isUser ? 'align-self: flex-end; align-items: flex-end;' : 'align-self: flex-start;'} max-width: 90%;`;
-        
         msgDiv.innerHTML = `
-          <div style="font-size: 9px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
+          <div class="chat-msg-meta">
             <span>👤 ${sender}</span>
-            <span style="font-weight: normal; opacity: 0.8;">刚刚</span>
+            <span>刚刚</span>
           </div>
-          <div class="msg-bubble" style="${isUser ? 'background: linear-gradient(145deg, #fff9f9, #fff0f1); border: 1px solid rgba(140, 34, 48, 0.2); border-radius: 12px 12px 0 12px;' : 'background: linear-gradient(145deg, #fffdfa, #fcf6eb); border: 1px solid rgba(212,175,55,0.2); border-radius: 12px 12px 12px 0;'} padding: 10px 12px; font-size: 12px; color: var(--ink); line-height: 1.6; text-align: justify; box-shadow: 0 4px 12px rgba(140,34,48,0.05); word-break: break-all;">
+          <div class="msg-bubble">
             ${text}
           </div>
         `;
@@ -1954,16 +1795,75 @@ async function fetchTimeInsight(contextText) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
       };
 
-      const handleSend = () => {
+      const handleSend = async () => {
         const text = chatInput.value.trim();
         if (!text) return;
         
-        appendMessage('阁下', text, true);
+        appendMessage('我', text, true);
         chatInput.value = '';
         
-        setTimeout(() => {
-          appendMessage('时行君', '客官所呈递之语，已入本阁法眼。天机运转，待稍后为您深入推演剖析。', false);
-        }, 1000);
+        // Disable input while loading
+        chatInput.disabled = true;
+        sendBtn.disabled = true;
+                // Add temporary typing indicator
+        const typingId = 'typing-' + Date.now();
+        const typingDiv = d.createElement('div');
+        typingDiv.id = typingId;
+        typingDiv.className = 'chat-message system';
+        typingDiv.innerHTML = `
+          <div class="chat-msg-meta">
+            <span>👤 AI 助手</span>
+            <span>正在思考...</span>
+          </div>
+          <div class="msg-bubble">
+            ⏳ 正在思考并推演...
+          </div>
+        `;
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+          const messages = [];
+          const dateContext = buildInsightContext(selectedTaskDate || now);
+          
+          messages.push({
+            role: 'system',
+            content: `你是一个集成在《时行》个人决策系统中的智能 AI 助手。你的名字叫“AI 助手”。
+你的职责是协助用户，解答疑问。你可以结合用户在系统内当前的【天时】、【地利】、【人和】以及【个人档案】（如果相关的话）为其提供中肯、贴心且实用的建议。
+请使用友好、专业、得体、现代的中文语言与用户交流。不要总是生硬地搬出八字或命理术语，除非用户主动问及。回答应言简意赅，重点突出。
+
+当前用户的背景上下文如下：
+${dateContext}`
+          });
+          
+          // Add history
+          chatHistory.forEach(msg => {
+            messages.push({ role: msg.role, content: msg.content });
+          });
+          
+          // Add current message
+          messages.push({ role: 'user', content: text });
+          
+          const reply = await fetchDeepSeekChat(messages);
+          
+          // Remove typing indicator
+          const tEl = get(typingId);
+          if (tEl) tEl.remove();
+          
+          appendMessage('AI 助手', reply, false);
+          
+          chatHistory.push({ role: 'user', content: text });
+          chatHistory.push({ role: 'assistant', content: reply });
+        } catch (err) {
+          console.error("AI chat failed:", err);
+          const tEl = get(typingId);
+          if (tEl) tEl.remove();
+          appendMessage('AI 助手', `❌ 获取回复失败：${err.message || '网络连接异常，请检查设置。'}`, false);
+        } finally {
+          chatInput.disabled = false;
+          sendBtn.disabled = false;
+          chatInput.focus();
+        }
       };
 
       sendBtn.onclick = handleSend;
@@ -1971,14 +1871,15 @@ async function fetchTimeInsight(contextText) {
       
       if (clearChatBtn) {
         clearChatBtn.onclick = () => {
+          chatHistory = [];
           chatMessages.innerHTML = `
-            <div class="chat-message system" style="display: flex; flex-direction: column; gap: 4px; align-self: flex-start; max-width: 90%;">
-              <div style="font-size: 9px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                <span>👤 时行君</span>
-                <span style="font-weight: normal; opacity: 0.8;">刚刚</span>
+            <div class="chat-message system">
+              <div class="chat-msg-meta">
+                <span>👤 AI 助手</span>
+                <span>刚刚</span>
               </div>
-              <div class="msg-bubble" style="background: linear-gradient(145deg, #fffdfa, #fcf6eb); border: 1px solid rgba(212,175,55,0.2); border-radius: 12px 12px 12px 0; padding: 10px 12px; font-size: 12px; color: var(--ink); line-height: 1.6; text-align: justify; box-shadow: 0 4px 12px rgba(212,175,55,0.05);">
-                已抚平素卷。客官可重新呈递您的困惑。
+              <div class="msg-bubble">
+                对话已清空，您可以重新开始提问。
               </div>
             </div>
           `;

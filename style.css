@@ -1331,6 +1331,44 @@ body {
 /* ==========================================================================
    10. CHAT PANEL STYLES (聊天面板样式定义)
    ========================================================================== */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+    flex-shrink: 0;
+}
+
+#clearChatBtn {
+    font-size: 10px;
+    color: var(--muted);
+    background: none;
+    border: 1px dashed rgba(138, 127, 121, 0.4);
+    border-radius: 4px;
+    padding: 2px 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#clearChatBtn:hover {
+    color: var(--forbidden-red);
+    border-color: var(--forbidden-red);
+    background: rgba(140, 34, 48, 0.03);
+}
+
+.chat-messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-right: 4px;
+    margin-bottom: 14px;
+}
+
 .chat-messages::-webkit-scrollbar {
     width: 4px;
 }
@@ -1342,18 +1380,52 @@ body {
     background: transparent;
 }
 
-#chatInput:focus {
-    border-color: var(--forbidden-red) !important;
-    box-shadow: 0 0 0 3px rgba(140, 34, 48, 0.08);
-}
-
 .chat-message {
     animation: fadeIn 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 90%;
+}
+
+.chat-msg-meta {
+    font-size: 9px;
+    color: var(--muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.chat-msg-meta span:last-child {
+    font-weight: normal;
+    opacity: 0.8;
+}
+
+.chat-message.system {
+    align-self: flex-start;
 }
 
 .chat-message.user {
     align-self: flex-end;
     align-items: flex-end;
+}
+
+.chat-message .msg-bubble {
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.6;
+    text-align: justify;
+    word-break: break-all;
+    box-shadow: 0 4px 12px rgba(47, 37, 34, 0.03);
+}
+
+.chat-message.system .msg-bubble {
+    background: linear-gradient(145deg, #fffdfa, #fcf6eb);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 12px 12px 12px 0;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.05);
 }
 
 .chat-message.user .msg-bubble {
@@ -1363,49 +1435,94 @@ body {
     box-shadow: 0 4px 12px rgba(140, 34, 48, 0.05) !important;
 }
 
+.chat-input-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    flex-shrink: 0;
+}
+
+.chat-input {
+    flex: 1;
+    height: 36px;
+    border: 1px solid rgba(47, 37, 34, 0.15);
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 12px;
+    outline: none;
+    background: #fffdfa;
+    color: var(--ink);
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.chat-input:focus {
+    border-color: var(--forbidden-red) !important;
+    box-shadow: 0 0 0 3px rgba(140, 34, 48, 0.08);
+}
+
+.chat-input:disabled {
+    background: rgba(47, 37, 34, 0.03);
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.chat-send-btn {
+    height: 36px;
+    background: var(--forbidden-red);
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    padding: 0 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.chat-send-btn:hover {
+    background: #a62a3b;
+    transform: translateY(-1px);
+}
+
+.chat-send-btn:active {
+    transform: translateY(0);
+}
+
+.chat-send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* ==========================================================================
-   11. LUNAR PANEL & SPLIT LAYOUT STYLES (阴历面板与分栏自适应)
+   11. CALENDAR LAYOUT & SPLIT STYLES (日历重构分栏及黄历详情)
    ========================================================================== */
-.lunar-split-container {
+.calendar-layout-container {
     display: flex;
     gap: 20px;
+    width: 100%;
+    height: 100%;
+    align-items: stretch;
+}
+
+.calendar-main-section {
+    flex: 1.8;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-detail-section {
     flex: 1;
-    min-height: 0;
-    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
 }
 
-.lunar-detail-card::-webkit-scrollbar {
-    width: 4px;
-}
-.lunar-detail-card::-webkit-scrollbar-thumb {
-    background: rgba(140, 34, 48, 0.15);
-    border-radius: 4px;
-}
-.lunar-detail-card::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-@media (max-width: 768px) {
-    .lunar-split-container {
-        flex-direction: column !important;
-        overflow-y: auto;
-    }
-    .lunar-split-container > div {
-        flex: none !important;
-        width: 100% !important;
-    }
-    #lunarCalendarGrid {
-        height: 60vh;
-    }
-    .lunar-detail-card {
-        margin-top: 10px;
-        max-height: 300px;
-    }
-}
-
-/* Lunar Detail Card Full Styling */
 .lunar-detail-card {
-    flex: 1.2;
+    height: 100%;
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -1415,17 +1532,37 @@ body {
     padding: 18px;
     box-sizing: border-box;
     overflow-y: auto;
-    min-height: 0;
 }
 
-/* Lunar 5-day columns grid overrides */
-#lunarCalendarGrid {
-    grid-template-columns: repeat(5, 1fr) !important;
-    grid-template-rows: repeat(7, 1fr) !important;
+.lunar-detail-card::-webkit-scrollbar {
+    width: 4px;
 }
 
-#lunarWeekdayBar {
-    grid-template-columns: repeat(5, 1fr) !important;
+.lunar-detail-card::-webkit-scrollbar-thumb {
+    background: rgba(140, 34, 48, 0.15);
+    border-radius: 4px;
+}
+
+.lunar-detail-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+@media (max-width: 1024px) {
+    .calendar-layout-container {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .calendar-main-section, .calendar-detail-section {
+        flex: none;
+        width: 100%;
+    }
+    .calendar-main-section .calendar-grid {
+        height: 60vh;
+    }
+    .lunar-detail-card {
+        margin-top: 10px;
+        max-height: 300px;
+    }
 }
 
 /* ===========================================

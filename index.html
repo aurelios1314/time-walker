@@ -25,16 +25,8 @@
           <div class="nav-card nav-active" data-panel="calendar" id="navCardCalendar">
             <span class="nav-card-icon">📅</span>
             <div class="nav-card-body">
-              <span class="nav-card-label">阳历</span>
+              <span class="nav-card-label">日历</span>
               <span class="nav-card-sub" id="navSumCalendar">加载中...</span>
-            </div>
-          </div>
-
-          <div class="nav-card" data-panel="lunar" id="navCardLunar">
-            <span class="nav-card-icon">🌙</span>
-            <div class="nav-card-body">
-              <span class="nav-card-label">阴历</span>
-              <span class="nav-card-sub" id="navSumLunar">加载中...</span>
             </div>
           </div>
 
@@ -102,40 +94,32 @@
 
         <!-- Panel: Calendar (Default) -->
         <div class="main-panel is-active" id="panel-calendar">
-          <header class="calendar-header">
-            <div class="month-selector">
-              <button class="nav-btn" id="prevBtn">◂</button>
-              <h1 class="month-display" id="monthGroupText">加载中</h1>
-              <button class="nav-btn" id="nextBtn">▸</button>
+          <div class="calendar-layout-container">
+            <!-- 左侧/上方：日历主区域 -->
+            <div class="calendar-main-section">
+              <header class="calendar-header">
+                <div class="month-selector">
+                  <button class="nav-btn" id="prevBtn">◂</button>
+                  <h1 class="month-display" id="monthGroupText">加载中</h1>
+                  <button class="nav-btn" id="nextBtn">▸</button>
+                </div>
+                <div class="header-actions">
+                  <button class="today-btn" id="todayBtn">今</button>
+                </div>
+              </header>
+              <div class="weekday-bar">
+                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+              </div>
+              <div class="calendar-grid" id="calendarGrid"></div>
             </div>
-            <div class="header-actions">
-              <button class="today-btn" id="todayBtn">今</button>
+            
+            <!-- 右侧/下方：今日黄历宜忌区域 -->
+            <div class="calendar-detail-section">
+              <div id="lunarDetailContent" class="lunar-detail-card">
+                <!-- JS 动态填充宜忌和干支 -->
+              </div>
             </div>
-          </header>
-          <div class="weekday-bar">
-            <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
           </div>
-          <div class="calendar-grid" id="calendarGrid"></div>
-        </div>
-
-        <!-- Panel: Lunar Calendar -->
-        <div class="main-panel" id="panel-lunar">
-          <header class="calendar-header">
-            <div class="month-selector">
-              <button class="nav-btn" id="lunarPrevBtn">◂</button>
-              <h1 class="month-display" id="lunarMonthGroupText">加载中</h1>
-              <button class="nav-btn" id="lunarNextBtn">▸</button>
-            </div>
-            <div class="header-actions">
-              <button class="today-btn" id="lunarTodayBtn">今</button>
-            </div>
-          </header>
-          <div class="weekday-bar" id="lunarWeekdayBar">
-            <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span>
-          </div>
-          
-          <!-- Lunar Calendar Grid (Full Width) -->
-          <div class="calendar-grid" id="lunarCalendarGrid" style="flex: 1; min-height: 0; margin-top: 12px;"></div>
         </div>
 
         <!-- Panel: Weather -->
@@ -235,27 +219,27 @@
       <section class="schedule-drawer" id="chatDrawer">
         <div class="chat-header">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-family: serif; font-size: 15px; font-weight: 700; color: var(--forbidden-red);">时行笔谈</span>
+            <span style="font-family: serif; font-size: 15px; font-weight: 700; color: var(--forbidden-red);">AI 助手</span>
             <span style="font-size: 9px; color: var(--champagne-gold); border: 1px solid var(--champagne-gold); border-radius: 4px; padding: 0 4px; line-height: 1.4;">AI</span>
           </div>
-          <button id="clearChatBtn" style="font-size: 10px; color: #8a7f79; background: none; border: 1px dashed #8a7f79; border-radius: 4px; padding: 2px 6px; cursor: pointer;">清空对话</button>
+          <button id="clearChatBtn">清空对话</button>
         </div>
 
         <div class="chat-messages" id="chatMessages">
-          <div class="chat-message system" style="display: flex; flex-direction: column; gap: 4px; align-self: flex-start; max-width: 90%;">
-            <div style="font-size: 9px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 4px;">
-              <span>👤 时行君</span>
-              <span style="font-weight: normal; opacity: 0.8;">刚刚</span>
+          <div class="chat-message system">
+            <div class="chat-msg-meta">
+              <span>👤 AI 助手</span>
+              <span>刚刚</span>
             </div>
-            <div class="msg-bubble" style="background: linear-gradient(145deg, #fffdfa, #fcf6eb); border: 1px solid rgba(212,175,55,0.2); border-radius: 12px 12px 12px 0; padding: 10px 12px; font-size: 12px; color: var(--ink); line-height: 1.6; text-align: justify; box-shadow: 0 4px 12px rgba(212,175,55,0.05);">
-              客官驾临，请呈递您的困惑。本阁将结合天时地利，为您推演一二。
+            <div class="msg-bubble">
+              您好！我是您的 AI 助手。您可以向我提问，或者让我结合当前日期的天时、地利、人和为您提供分析建议。
             </div>
           </div>
         </div>
 
         <div class="chat-input-container">
-          <input type="text" id="chatInput" class="chat-input" placeholder="呈递困惑..." />
-          <button id="sendChatBtn" class="chat-send-btn">递</button>
+          <input type="text" id="chatInput" class="chat-input" placeholder="输入您的问题..." />
+          <button id="sendChatBtn" class="chat-send-btn">发送</button>
         </div>
       </section>
 
