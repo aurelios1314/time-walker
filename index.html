@@ -29,6 +29,14 @@
               <span class="nav-card-sub" id="navSumCalendar">加载中...</span>
             </div>
           </div>
+ 
+          <div class="nav-card" data-panel="huangli" id="navCardHuangli">
+            <span class="nav-card-icon">📜</span>
+            <div class="nav-card-body">
+              <span class="nav-card-label">黄历</span>
+              <span class="nav-card-sub" id="navSumHuangli">加载中...</span>
+            </div>
+          </div>
 
           <div class="nav-card" data-panel="weather" id="navCardWeather">
             <span class="nav-card-icon">🌤️</span>
@@ -94,29 +102,68 @@
 
         <!-- Panel: Calendar (Default) -->
         <div class="main-panel is-active" id="panel-calendar">
-          <div class="calendar-layout-container">
-            <!-- 左侧/上方：日历主区域 -->
-            <div class="calendar-main-section">
-              <header class="calendar-header">
-                <div class="month-selector">
-                  <button class="nav-btn" id="prevBtn">◂</button>
-                  <h1 class="month-display" id="monthGroupText">加载中</h1>
-                  <button class="nav-btn" id="nextBtn">▸</button>
-                </div>
-                <div class="header-actions">
-                  <button class="today-btn" id="todayBtn">今</button>
-                </div>
-              </header>
-              <div class="weekday-bar">
-                <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
-              </div>
-              <div class="calendar-grid" id="calendarGrid"></div>
+          <header class="calendar-header">
+            <div class="month-selector">
+              <button class="nav-btn" id="prevBtn">◂</button>
+              <h1 class="month-display" id="monthGroupText">加载中</h1>
+              <button class="nav-btn" id="nextBtn">▸</button>
             </div>
-            
-            <!-- 右侧/下方：今日黄历宜忌区域 -->
-            <div class="calendar-detail-section">
-              <div id="lunarDetailContent" class="lunar-detail-card">
-                <!-- JS 动态填充宜忌和干支 -->
+            <div class="header-actions">
+              <button class="today-btn" id="todayBtn">今</button>
+            </div>
+          </header>
+          <div class="weekday-bar">
+            <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+ 
+        <!-- Panel: Huangli (Yellow Calendar) -->
+        <div class="main-panel" id="panel-huangli">
+          <div class="panel-header">
+            <h2 class="panel-title">📜 今日黄历</h2>
+            <span class="panel-meta" id="huangliDateTitle">-</span>
+          </div>
+          
+          <div class="huangli-container">
+            <!-- 传统撕历纸张效果 -->
+            <div class="huangli-paper">
+              <!-- 顶部公历与星期 -->
+              <div class="huangli-gregorian-row">
+                <span id="hlGregorianYear">-</span>
+                <span class="hl-week-badge" id="hlGregorianWeek">-</span>
+              </div>
+              
+              <!-- 农历日期展示 -->
+              <div class="hl-lunar-display">
+                <div class="hl-lunar-month" id="hlLunarMonth">-</div>
+                <div class="hl-lunar-day" id="hlLunarDay">-</div>
+              </div>
+              
+              <!-- 岁次与吉神方位 -->
+              <div class="hl-info-display">
+                <div class="hl-info-group">
+                  <span class="hl-label">岁次干支</span>
+                  <span class="hl-value" id="hlGanzhi">-</span>
+                </div>
+                <div class="hl-info-group">
+                  <span class="hl-label">吉神方位</span>
+                  <span class="hl-value" id="hlJishen">-</span>
+                </div>
+              </div>
+              
+              <div class="hl-tear-line"></div>
+              
+              <!-- 宜忌事项区 -->
+              <div class="hl-yiji-section">
+                <div class="hl-yiji-box hl-yi">
+                  <div class="yiji-tag">宜</div>
+                  <div class="yiji-list" id="hlYiList">-</div>
+                </div>
+                <div class="hl-yiji-box hl-ji">
+                  <div class="yiji-tag">忌</div>
+                  <div class="yiji-list" id="hlJiList">-</div>
+                </div>
               </div>
             </div>
           </div>

@@ -265,7 +265,7 @@ async function fetchDeepSeekChat(messages) {
         updateDetailPanel(selectedTaskDate);
         renderTasks(selectedTaskDate);
         loadDailyStatusForSelectedDate();
-        updateLunarDetailCard(selectedTaskDate);
+        updateHuangliPanel(selectedTaskDate);
         
         // Re-render grids to ensure selected state highlights correctly
         renderCalendar(currentYear, currentMonth);
@@ -274,43 +274,42 @@ async function fetchDeepSeekChat(messages) {
     }
   }
 
-  function updateLunarDetailCard(date) {
-    const contentEl = get('lunarDetailContent');
-    if (!contentEl) return;
-    
+  function updateHuangliPanel(date) {
     const solar = Solar.fromYmd(date.getFullYear(), date.getMonth() + 1, date.getDate());
     const lunar = solar.getLunar();
     
-    const yiList = lunar.getDayYi();
-    const jiList = lunar.getDayJi();
+    const gregYearEl = get('hlGregorianYear');
+    const gregWeekEl = get('hlGregorianWeek');
+    const lunarMonthEl = get('hlLunarMonth');
+    const lunarDayEl = get('hlLunarDay');
+    const ganzhiEl = get('hlGanzhi');
+    const jishenEl = get('hlJishen');
+    const yiEl = get('hlYiList');
+    const jiEl = get('hlJiList');
+    const dateTitleEl = get('huangliDateTitle');
     
-    contentEl.innerHTML = `
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(140, 34, 48, 0.08); padding-bottom: 6px;">
-          <span style="font-weight: 700; color: var(--ink);">阴历日期</span>
-          <span style="color: var(--muted);">${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(140, 34, 48, 0.08); padding-bottom: 6px;">
-          <span style="font-weight: 700; color: var(--ink);">干支纪日</span>
-          <span style="font-weight: 600; color: var(--forbidden-red);">${lunar.getYearInGanZhi()}(${lunar.getYearShengXiao()})年 · ${lunar.getMonthInGanZhi()}月 · ${lunar.getDayInGanZhi()}日</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(140, 34, 48, 0.08); padding-bottom: 6px;">
-          <span style="font-weight: 700; color: var(--ink);">吉神方位</span>
-          <span style="color: var(--muted);">财神${lunar.getPositionCai()} · 喜神${lunar.getPositionXi()} · 福神${lunar.getPositionFu()}</span>
-        </div>
-        
-        <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
-          <div style="display: flex; gap: 8px; align-items: flex-start;">
-            <span style="background: #1e7e34; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; flex-shrink: 0;">宜</span>
-            <span style="color: #2b703e; font-weight: 600; line-height: 1.4; font-size: 12.5px;">${yiList.length ? yiList.slice(0, 8).join(' · ') : '诸事不宜'}</span>
-          </div>
-          <div style="display: flex; gap: 8px; align-items: flex-start; margin-top: 4px;">
-            <span style="background: var(--forbidden-red); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; flex-shrink: 0;">忌</span>
-            <span style="color: var(--forbidden-red); font-weight: 600; line-height: 1.4; font-size: 12.5px;">${jiList.length ? jiList.slice(0, 8).join(' · ') : '诸事皆宜'}</span>
-          </div>
-        </div>
-      </div>
-    `;
+    if (dateTitleEl) dateTitleEl.textContent = `${solar.getYear()}年${solar.getMonth()}月${solar.getDay()}日`;
+    if (gregYearEl) gregYearEl.textContent = `${solar.getYear()}年 · ${solar.getMonth()}月${solar.getDay()}日`;
+    if (gregWeekEl) {
+      const weeks = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      gregWeekEl.textContent = weeks[date.getDay()];
+    }
+    if (lunarMonthEl) lunarMonthEl.textContent = `${lunar.getMonthInChinese()}月`;
+    if (lunarDayEl) lunarDayEl.textContent = lunar.getDayInChinese();
+    if (ganzhiEl) {
+      ganzhiEl.textContent = `${lunar.getYearInGanZhi()}(${lunar.getYearShengXiao()})年 · ${lunar.getMonthInGanZhi()}月 · ${lunar.getDayInGanZhi()}日`;
+    }
+    if (jishenEl) {
+      jishenEl.textContent = `财神 ${lunar.getPositionCai()} · 喜神 ${lunar.getPositionXi()} · 福神 ${lunar.getPositionFu()}`;
+    }
+    if (yiEl) {
+      const yiList = lunar.getDayYi();
+      yiEl.textContent = yiList.length ? yiList.slice(0, 10).join(' · ') : '诸事不宜';
+    }
+    if (jiEl) {
+      const jiList = lunar.getDayJi();
+      jiEl.textContent = jiList.length ? jiList.slice(0, 10).join(' · ') : '诸事皆宜';
+    }
   }
 
   function updateNavSummaries(date) {
@@ -325,12 +324,10 @@ async function fetchDeepSeekChat(messages) {
       calendarSum.textContent = `${date.getMonth() + 1}月${date.getDate()}日 ${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}${suffix}`;
     }
 
-    // Lunar Summary
-    const lunarSum = get('navSumLunar');
-    if (lunarSum) {
-      const customLFests = getLunarFestivalsForDate(lunar);
-      const suffix = customLFests.length ? ` · ${customLFests.join('/')}` : '';
-      lunarSum.textContent = `${lunar.getYearInGanZhi()}年 · ${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}${suffix}`;
+    // Huangli Summary
+    const huangliSum = get('navSumHuangli');
+    if (huangliSum) {
+      huangliSum.textContent = `${lunar.getYearInGanZhi()}年 · ${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`;
     }
 
     // 2. Weather Summary
@@ -639,7 +636,9 @@ async function fetchDeepSeekChat(messages) {
     switch (activePanelId) {
       case 'calendar':
         renderCalendar(currentYear, currentMonth);
-        updateLunarDetailCard(selectedTaskDate);
+        break;
+      case 'huangli':
+        updateHuangliPanel(selectedTaskDate || now);
         break;
       case 'weather':
         renderWeatherPanel(selectedTaskDate);
@@ -1384,7 +1383,7 @@ async function fetchDeepSeekChat(messages) {
     updateDetailPanel(now);
     renderTasks(now);
     updateProfilePanelDisplay();
-    updateLunarDetailCard(now);
+    updateHuangliPanel(now);
 
     // 绑定导航栏面板切换
     d.querySelectorAll('.nav-card').forEach(card => {
@@ -1422,7 +1421,7 @@ async function fetchDeepSeekChat(messages) {
       selectedTaskDate = new Date(currentYear, currentMonth, targetDay);
 
       renderCalendar(currentYear, currentMonth); 
-      updateLunarDetailCard(selectedTaskDate);
+      updateHuangliPanel(selectedTaskDate);
       renderTasks(selectedTaskDate);
       updateDetailPanel(selectedTaskDate);
       loadDailyStatusForSelectedDate();
@@ -1443,7 +1442,7 @@ async function fetchDeepSeekChat(messages) {
       selectedTaskDate = new Date(currentYear, currentMonth, targetDay);
 
       renderCalendar(currentYear, currentMonth); 
-      updateLunarDetailCard(selectedTaskDate);
+      updateHuangliPanel(selectedTaskDate);
       renderTasks(selectedTaskDate);
       updateDetailPanel(selectedTaskDate);
       loadDailyStatusForSelectedDate();
@@ -1461,7 +1460,7 @@ async function fetchDeepSeekChat(messages) {
       updateDetailPanel(now); 
       renderTasks(now); 
       loadDailyStatusForSelectedDate();
-      updateLunarDetailCard(now);
+      updateHuangliPanel(now);
       if (activePanelId !== 'calendar') {
         refreshActivePanel();
       }

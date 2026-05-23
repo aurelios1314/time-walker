@@ -674,9 +674,8 @@ body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-template-rows: repeat(6, 1fr);
-    gap: 4px; /* 从 6px 降低到 4px */
+    gap: 6px;
     flex: 1;
-    max-height: 330px; /* 限制日历最大高度，防止过度霸占空间 */
 }
 
 /* 单个日历格子冷峻骨架 */
@@ -684,7 +683,7 @@ body {
     background: var(--card);
     border: 1px solid rgba(47, 37, 34, 0.05);
     border-radius: 10px;
-    padding: 4px; /* 从 6px 降低到 4px */
+    padding: 6px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -703,7 +702,7 @@ body {
 
 /* 日历数字与天时状态 */
 .day-num {
-    font-size: 13px; /* 从 14px 降低到 13px */
+    font-size: 14px;
     font-weight: 700;
     color: var(--ink);
 }
@@ -720,7 +719,7 @@ body {
 
 /* 农历与节气断语 */
 .lunar-text {
-    font-size: 8px; /* 从 9px 降低到 8px */
+    font-size: 9px;
     color: var(--muted);
     text-align: right;
     white-space: nowrap;
@@ -740,8 +739,8 @@ body {
     white-space: normal;
     word-break: break-all;
     max-width: 100%;
-    margin-top: 1px;
-    line-height: 1.1;
+    margin-top: 2px;
+    line-height: 1;
 }
 
 .day-lunar-info {
@@ -750,8 +749,8 @@ body {
     white-space: normal;
     word-break: break-all;
     max-width: 100%;
-    margin-top: 1px;
-    line-height: 1.1;
+    margin-top: 2px;
+    line-height: 1;
 }
 
 .day-lunar-info.is-jieqi {
@@ -1500,88 +1499,142 @@ body {
 }
 
 /* ==========================================================================
-   11. CALENDAR LAYOUT & SPLIT STYLES (日历重构分栏及黄历详情)
+   11. HUANGLI PANEL STYLES (独立黄历板块样式)
    ========================================================================== */
-.calendar-layout-container {
-    display: flex;
-    gap: 20px;
-    width: 100%;
-    height: 100%;
-    align-items: stretch;
-}
-
-.calendar-main-section {
-    flex: 1.8;
-    display: flex;
-    flex-direction: column;
-}
-
-.calendar-detail-section {
+.huangli-container {
     flex: 1;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: rgba(255, 253, 249, 0.4);
+    min-height: 0;
 }
-
-.lunar-detail-card {
-    height: 100%;
+/* 中式传统撕历纸张外观 */
+.huangli-paper {
+    background: #ffffff;
+    border: 1px solid rgba(140, 34, 48, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(140, 34, 48, 0.04);
+    width: 100%;
+    max-width: 440px;
+    max-height: 95%;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    position: relative;
+    overflow-y: auto;
+}
+/* 顶部公历行 */
+.huangli-gregorian-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 2px solid var(--forbidden-red);
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+}
+.hl-week-badge {
+    background: var(--forbidden-red);
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+/* 农历超大字展示区 */
+.hl-lunar-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.hl-lunar-month {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--muted);
+    font-family: "Source Han Serif SC", serif;
+}
+.hl-lunar-day {
+    font-size: 64px;
+    font-weight: 900;
+    color: var(--forbidden-red);
+    font-family: "Kaiti", "STKaiti", serif;
+    margin: 8px 0;
+    line-height: 1;
+}
+/* 岁次与吉神 */
+.hl-info-display {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(212, 175, 55, 0.05);
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 20px;
+}
+.hl-info-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+.hl-label {
+    color: var(--muted);
+    font-weight: 600;
+}
+.hl-value {
+    color: var(--ink);
+    font-weight: 700;
+}
+/* 撕线 */
+.hl-tear-line {
+    border-top: 1px dashed rgba(138, 127, 121, 0.3);
+    margin: 5px 0 15px 0;
+}
+/* 宜忌区 */
+.hl-yiji-section {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    background: rgba(140, 34, 48, 0.02);
-    border: 1.5px solid rgba(140, 34, 48, 0.08);
-    border-radius: 16px;
-    padding: 18px;
-    box-sizing: border-box;
-    overflow-y: auto;
 }
-
-.lunar-detail-card::-webkit-scrollbar {
-    width: 4px;
+.hl-yiji-box {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
 }
-
-.lunar-detail-card::-webkit-scrollbar-thumb {
-    background: rgba(140, 34, 48, 0.15);
-    border-radius: 4px;
+.yiji-tag {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
 }
-
-.lunar-detail-card::-webkit-scrollbar-track {
-    background: transparent;
+.hl-yi .yiji-tag {
+    background: #2b703e;
 }
-
-/* 垂直排列状态下的高度精准分配 */
-@media (max-width: 1200px) {
-    .calendar-layout-container {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        width: 100%;
-        overflow: hidden; /* 防止容器本身产生滚动条 */
-    }
-    /* 日历区域：高度自适应，不拉伸 */
-    .calendar-main-section {
-        flex: none;
-        width: 100%;
-        height: auto;
-    }
-    /* 黄历区域：精准占用除日历外的所有剩余高度 */
-    .calendar-detail-section {
-        flex: 1;
-        min-height: 0; /* 关键：允许 flex 子项缩小到其内容高度以下 */
-        width: 100%;
-        margin-top: 10px;
-    }
-    /* 黄历卡片：撑满父容器，并在宜忌内容过多时，支持内部独立滚动 */
-    .lunar-detail-card {
-        height: 100%;
-        max-height: 100% !important;
-        padding: 12px 16px; /* 适当紧凑化卡片内边距 */
-        gap: 10px; /* 缩减卡片内元素间距 */
-        background: rgba(140, 34, 48, 0.02);
-        border: 1.5px solid rgba(140, 34, 48, 0.08);
-        border-radius: 16px;
-        box-sizing: border-box;
-        overflow-y: auto; /* 宜忌文字超长时，在卡片内部滚动 */
-    }
+.hl-ji .yiji-tag {
+    background: var(--forbidden-red);
+}
+.yiji-list {
+    font-size: 13.5px;
+    line-height: 1.5;
+    font-weight: 600;
+}
+.hl-yi .yiji-list {
+    color: #2b703e;
+}
+.hl-ji .yiji-list {
+    color: var(--forbidden-red);
 }
 
 /* ===========================================
